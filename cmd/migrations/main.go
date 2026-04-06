@@ -18,6 +18,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if err := db.EnsureDatabase(cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName); err != nil {
+		log.Fatal(err)
+	}
+
 	conn, err := db.Open(cfg.DBDSN())
 	if err != nil {
 		log.Fatal(err)
