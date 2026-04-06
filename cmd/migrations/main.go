@@ -2,15 +2,13 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"serverGo/internal/config"
-	"serverGo/internal/routes"
+	"serverGo/internal/db"
 
 	"github.com/joho/godotenv"
 )
 
 func main() {
-
 	if err := godotenv.Load(); err != nil {
 		log.Println(".env non trovato")
 	}
@@ -20,13 +18,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Println("DB config loaded for host:", cfg.DBHost)
+	conn, err := db.Open(cfg.DBDSN())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
 
-	mux := routes.Configure()
-
-	log.Println("Server avviato su :8080")
-	if err := http.ListenAndServe(":8080", mux); err != nil {
+	if err := db.RunMigrations(conn); err != nil {
 		log.Fatal(err)
 	}
 
+	log.Println("Migrations Completed")
 }
