@@ -3,32 +3,19 @@ package main
 import (
 	"log"
 	"net/http"
-	"serverGo/internal/config"
 	"serverGo/internal/routes"
 
-	"github.com/joho/godotenv"
-
-	"serverGo/internal/db"
+	"serverGo/internal/app"
 )
 
 func main() {
 
-	if err := godotenv.Load(); err != nil {
-		log.Println(".env non trovato")
-	}
-
-	cfg, err := config.Load()
+	_, conn, cleanup, err := app.InitDb()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Println("DB config loaded for host:", cfg.DBHost)
-
-	conn, err := db.Open(cfg.DBDSN())
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer conn.Close()
+	defer cleanup()
 
 	mux := routes.Configure(conn)
 
