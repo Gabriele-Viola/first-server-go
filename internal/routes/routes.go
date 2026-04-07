@@ -1,24 +1,20 @@
 package routes
 
 import (
+	"database/sql"
 	"net/http"
 	"serverGo/internal/handlers"
-	"serverGo/internal/models"
 )
 
-func Configure() *http.ServeMux {
+func Configure(db *sql.DB) *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mockDB := []models.User{
-		{ID: 1, Name: "Gabriele", Email: "gabriele@example.com"},
-		{ID: 2, Name: "Elena", Email: "elena@example.com"},
-	}
+	userHandler := &handlers.UserHandler{DB: db}
+	postHandler := &handlers.PostHandler{DB: db}
 
-	userHandler := &handlers.UserHandler{Users: mockDB}
-
-	// "Metodo Percorso" -> Nuova sintassi super comoda
 	mux.HandleFunc("GET /api/hello", handlers.GetHello)
 	mux.HandleFunc("GET /api/users", userHandler.GetUsers)
+	mux.HandleFunc("GET /api/posts", postHandler.GetPosts)
 
 	return mux
 }
