@@ -7,16 +7,20 @@ import (
 )
 
 func main() {
-	cfg, conn, cleanup, err := app.InitDb()
+	cfg, err := app.LoadConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer cleanup()
-
 	if err := db.EnsureDatabase(cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName); err != nil {
 		log.Fatal(err)
 	}
+
+	conn, cleanup, err := app.OpenDB(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer cleanup()
 
 	if err := db.RunMigrations(conn); err != nil {
 		log.Fatal(err)
