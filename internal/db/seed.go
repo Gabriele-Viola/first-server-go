@@ -3,6 +3,8 @@ package db
 import (
 	"database/sql"
 	"fmt"
+
+	"serverGo/internal/db/seeders"
 )
 
 func RunSeed(conn *sql.DB) error {
@@ -10,29 +12,16 @@ func RunSeed(conn *sql.DB) error {
 	if err != nil {
 		return fmt.Errorf("begin tx: %w", err)
 	}
-	defer func() {
-		_ = tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
-	}()
-
-	if _, err := tx.Exec(
-		`INSERT INTO USERS (name, email) VALUES ('Gabriele', 'gabriele@mail.com'),('Elena', 'elena@mail.com') ON DUPLICATE KEY UPDATE name = VALUES(name)`,
-	); err != nil {
-		return fmt.Errorf("seed users: %w", err)
+	if err := seeders.SeedUsers(tx); err != nil {
+		return err
 	}
-
-	if _, err := tx.Exec(`INSERT INTO posts (user_id, title, body)
-	SELECT u.id, 'Primo post', 'Contenuto primo post' FROM users u WHERE u.email = 'gabriele@mail.com'`); err != nil {
-		return fmt.Errorf("seed posts gabriele: %w", err)
-	}
-
-	if _, err := tx.Exec(
-		`INSERT INTO posts (user_id, title, body)
-	SELECT u.id, 'Secondo post', 'Contenuto Secondo post' FROM users u WHERE u.email = 'elena@mail.com'`); err != nil {
-		return fmt.Errorf("seed posts elena: %w", err)
+	if err := seeders.SeedPosts(tx); err != nil {
+		return err
 	}
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("Commit tx: %w", err)
+		return fmt.Errorf("commit tx: %w", err)
 	}
 	return nil
 }
