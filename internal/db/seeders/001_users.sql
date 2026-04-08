@@ -1,1 +1,0 @@
-INSERT INTO USERS (name, email) VALUES ('Gabriele', 'gabriele@mail.com'),('Elena', 'elena@mail.com') ON DUPLICATE KEY UPDATE name = VALUES(name)
